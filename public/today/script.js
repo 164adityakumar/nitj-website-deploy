@@ -5,38 +5,48 @@ const geteventsbytime = "/api/eventsCalendar/findeventsbytime";
 
 // Function to fetch events from the backend
 async function fetchEvents() {
-  try {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
 
-    const events = [];
+  const events = [];
 
-    for (let i = 0; i < 3; i++) {
-      const monthOffset = month + i - 1;
-      
-      // Calculate the correct year and month
-      const currentYear = year + Math.floor(monthOffset / 12);
-      let currentMonth = monthOffset % 12;
+  for (let i = 0; i < 4; i++) {
+    const monthOffset = month + i - 1;
+    
+    // Calculate the correct year and month
+    const currentYear = year + Math.floor(monthOffset / 12);
+    let currentMonth = monthOffset % 12;
 
-      // Adjust currentMonth to be within the range of 1-12, accounting for December
-      if (currentMonth === 0) {
-        currentMonth = 12;
-      } else if (monthOffset < 0) {
-        currentMonth += 12;  // Handle negative months properly
-      }
-
-      const response = await fetch(`${getevents}?year=${currentYear}&month=${currentMonth}`);
-      const data = await response.json();
-      events.push(...data);
+    // Adjust currentMonth to be within the range of 1-12, accounting for December
+    if (currentMonth === 0) {
+      currentMonth = 12;
+    } else if (monthOffset < 0) {
+      currentMonth += 12;  // Handle negative months properly
     }
 
-    console.log(events);
-    return events;
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    return [];
+    console.log(`Fetching events for ${currentYear}-${currentMonth}`); // Add this line
+
+    try {
+      const response = await fetch(`${getevents}?year=${currentYear}&month=${currentMonth}`);
+      console.log(`Response status: ${response.status}`); // Add this line
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`Fetched data for ${currentYear}-${currentMonth}:`, data); // Add this line
+
+      events.push(...data);
+    } catch (error) {
+      console.error(`Error fetching events for ${currentYear}-${currentMonth}:`, error);
+      // Continue to the next iteration without stopping the entire process
+    }
   }
+
+  console.log("All fetched events:", events); // Add this line
+  return events;
 }
 
 // // Function to fetch events by type from the backend
@@ -295,6 +305,7 @@ if (formattedStartDate <= currentDate && formattedEndDate >= currentDate) {
     const dateObjB = new Date(dateB);
     return dateObjA - dateObjB;
   });
+
 
   // Create HTML elements for each event
   for (const [date, events] of sortedEvents) {
